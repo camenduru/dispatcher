@@ -1,5 +1,5 @@
 [Unit]
-Description=SDXL Turbo Worker
+Description=Discord SDXL Turbo Worker
 After=syslog.target network.target
 [Service]
 User=root
