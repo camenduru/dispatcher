@@ -14,7 +14,7 @@ def loop():
   collection_detail = db['detail']
 
   while True:
-    waiting_documents = collection_job.find({"status": "WAITING"})
+    waiting_documents = collection_job.find({"$and":[ {"status":"WAITING"}, {"source":"DISCORD"}]})
     for waiting_document in waiting_documents:
         detail = waiting_document['discord']
         discord = collection_detail.find_one({"_id": detail.id})['discord']
