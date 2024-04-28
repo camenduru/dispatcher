@@ -11,20 +11,28 @@ def loop():
   client = MongoClient(mongodb)
   db = client['web']
   collection_job = db['job']
+  collection_user = db['jhi_user']
   collection_detail = db['detail']
 
   while True:
-    waiting_documents = collection_job.find({"$and":[ {"status":"WAITING"}, {"source":"DISCORD"}]})
+    waiting_documents = collection_job.find({"$and":[ {"status":"WAITING"}, {"source":"WEB"}]})
     for waiting_document in waiting_documents:
         server = waiting_document['type']
         if(server==job):
-            detail = waiting_document['discord']
-            discord = collection_detail.find_one({"_id": detail.id})['discord']
-            total = collection_detail.find_one({"_id": detail.id})['total']
+            login = waiting_document['result']
+            user = collection_user.find_one({"login": login})
+            user_id = user["_id"]
+            detail = collection_detail.find_one({"user.$id": user_id})
+            detail_id = detail["_id"]
+            discord = detail["discord"]
+            total = detail["total"]
             amount = waiting_document['amount']
             command = waiting_document['command']
             source_channel = waiting_document['source_channel']
             source_id = waiting_document['source_id']
+            collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"user": user}})
+            collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"discord": detail}})
+            collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"total": detail}})
             collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "WORKING"}})
             try:
                 from gradio_client import Client
@@ -38,7 +46,8 @@ def loop():
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "DONE"}})
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"result": responseD.json()['attachments'][0]['url']}})
                     total = int(total) - int(amount)
-                    collection_detail.update_one({"_id": detail.id}, {"$set": {"total": total}})
+                    print(user["login"], total)
+                    collection_detail.update_one({"_id": detail_id}, {"$set": {"total": total}})
                 except requests.exceptions.RequestException as e:
                     print(f"D An error occurred: {e}")
                 except Exception as e:
