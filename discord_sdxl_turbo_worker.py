@@ -40,4 +40,6 @@ with gr.Blocks(title=f"sdxl-turbo", css=".gradio-container {max-width: 544px !im
 
     button.click(fn=generate, inputs=[textbox], outputs=[output_image], show_progress=False)
 
-demo.queue().launch(inline=False, share=False, debug=True, server_name='0.0.0.0', server_port=1002)
+import os
+PORT = os.getenv('server_port')
+demo.queue().launch(inline=False, share=False, debug=True, server_name='0.0.0.0', server_port=PORT)

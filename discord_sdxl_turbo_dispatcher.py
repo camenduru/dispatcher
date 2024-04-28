@@ -56,7 +56,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
             return None
         return path
       
-PORT = 1003
+PORT = os.getenv('server_port')
 Handler = MyHandler
 Handler.extensions_map.update({
     '.html': 'text/html',
