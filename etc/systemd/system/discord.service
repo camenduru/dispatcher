@@ -10,7 +10,7 @@ Environment="com_camenduru_discord_type=sdxl"
 Environment="com_camenduru_discord_amount=1"
 Environment="com_camenduru_discord_total=100"
 WorkingDirectory=/content/com.camenduru/discord
-ExecStart=/bin/bash -c 'java server.port=4000 -jar target/discord-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod'
+ExecStart=/bin/bash -c 'java -Dserver.port=3001 -jar target/discord-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod'
 Restart=always
 [Install]
 WantedBy=multi-user.target
