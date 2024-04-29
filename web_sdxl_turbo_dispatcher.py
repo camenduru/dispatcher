@@ -30,11 +30,6 @@ def loop():
             command = waiting_document['command']
             source_channel = waiting_document['source_channel']
             source_id = waiting_document['source_id']
-            user_ref = {"$ref": "jhi_user", "$id": user_id}
-            detail_ref = {"$ref": "detail", "$id": detail_id}
-            collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"user": user_ref}})
-            collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"discord": detail_ref}})
-            collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"total": detail_ref}})
             collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "WORKING"}})
             try:
                 from gradio_client import Client

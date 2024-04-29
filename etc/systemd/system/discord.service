@@ -7,8 +7,7 @@ Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
 Environment="com_camenduru_web_data_mongodb_uri=mongodb://127.0.0.1:27017/web?waitQueueMultiple=1000"
 Environment="com_camenduru_discord_token=MT"
 Environment="com_camenduru_discord_type=sdxl"
-Environment="com_camenduru_discord_amount=1"
-Environment="com_camenduru_discord_total=100"
+Environment="com_camenduru_discord_result=/content/images/generating.jpg"
 WorkingDirectory=/content/com.camenduru/discord
 ExecStart=/bin/bash -c 'java -Dserver.port=3001 -jar target/discord-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod'
 Restart=always
