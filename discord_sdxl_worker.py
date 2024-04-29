@@ -19,7 +19,7 @@ def closestNumber(n, m):
 def generate(prompt):
   width = closestNumber(1024, 8)
   height = closestNumber(1024, 8)
-  image = pipe(prompt, num_inference_steps=1, guidance_scale=0.0, width=width, height=height).images[0]
+  image = pipe(prompt, num_inference_steps=25, guidance_scale=7.5, width=width, height=height).images[0]
   image.save('/content/image.jpg')
   return image.resize((1024, 1024))
 
