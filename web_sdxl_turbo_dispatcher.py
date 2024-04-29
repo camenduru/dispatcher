@@ -19,10 +19,8 @@ def loop():
     for waiting_document in waiting_documents:
         server = waiting_document['type']
         if(server==job):
-            login = waiting_document['result']
-            user = collection_user.find_one({"login": login})
-            user_id = user["_id"]
-            detail = collection_detail.find_one({"user.$id": user_id})
+            login = waiting_document['login']
+            detail = collection_detail.find_one({"login": login})
             detail_id = detail["_id"]
             discord = detail["discord"]
             total = detail["total"]
@@ -43,7 +41,7 @@ def loop():
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "DONE"}})
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"result": responseD.json()['attachments'][0]['url']}})
                     total = int(total) - int(amount)
-                    print(user["login"], total)
+                    print(login, total)
                     collection_detail.update_one({"_id": detail_id}, {"$set": {"total": total}})
                 except requests.exceptions.RequestException as e:
                     print(f"D An error occurred: {e}")
