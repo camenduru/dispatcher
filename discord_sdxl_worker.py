@@ -17,11 +17,11 @@ def closestNumber(n, m):
     return n2
 
 def generate(prompt):
-  width = closestNumber(1024, 8)
-  height = closestNumber(1024, 8)
+  width = closestNumber(512, 8)
+  height = closestNumber(512, 8)
   image = pipe(prompt, num_inference_steps=25, guidance_scale=7.5, width=width, height=height).images[0]
   image.save('/content/image.jpg')
-  return image.resize((1024, 1024))
+  return image.resize((512, 512))
 
 with gr.Blocks(title=f"sdxl-turbo", css=".gradio-container {max-width: 544px !important}", analytics_enabled=False) as demo:
     with gr.Row():
