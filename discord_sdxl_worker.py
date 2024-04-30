@@ -1,7 +1,11 @@
 from diffusers import AutoPipelineForText2Image
 import torch
 
-pipe = AutoPipelineForText2Image.from_pretrained("Lykon/dreamshaper-8", torch_dtype=torch.float16, variant="fp16").to("cuda")
+pipe = AutoPipelineForText2Image.from_pretrained(
+    "misri/cyberrealisticXL_v11VAE",
+    torch_dtype=torch.float16,
+    variant="fp16",
+    requires_safety_checker=False).to("cuda")
 
 import gradio as gr
 
@@ -17,11 +21,11 @@ def closestNumber(n, m):
     return n2
 
 def generate(prompt):
-  width = closestNumber(512, 8)
-  height = closestNumber(512, 8)
+  width = closestNumber(1280, 8)
+  height = closestNumber(768, 8)
   image = pipe(prompt, num_inference_steps=25, guidance_scale=7.5, width=width, height=height).images[0]
   image.save('/content/image.jpg')
-  return image.resize((512, 512))
+  return image
 
 with gr.Blocks(title=f"sdxl-turbo", css=".gradio-container {max-width: 544px !important}", analytics_enabled=False) as demo:
     with gr.Row():
