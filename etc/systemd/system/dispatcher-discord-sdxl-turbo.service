@@ -1,5 +1,5 @@
 [Unit]
-Description=Discord SDXL Turbo Dispatcher
+Description=Dispatcher Discord SDXL Turbo
 After=syslog.target network.target
 [Service]
 User=root
@@ -10,7 +10,7 @@ Environment="com_camenduru_discord_api_url=http://127.0.0.1:1002"
 Environment="com_camenduru_discord_job_type=sdxl-turbo"
 Environment="server_port=1003"
 WorkingDirectory=/content/com.camenduru/service
-ExecStart=/bin/bash -c 'python discord_sdxl_turbo_dispatcher.py'
+ExecStart=/bin/bash -c 'python dispatcher-discord-sdxl-turbo.py'
 Restart=always
 [Install]
 WantedBy=multi-user.target

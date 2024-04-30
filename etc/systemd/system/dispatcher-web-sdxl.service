@@ -1,5 +1,5 @@
 [Unit]
-Description=Discord SDXL Dispatcher
+Description=Dispatcher Web SDXL
 After=syslog.target network.target
 [Service]
 User=root
@@ -8,9 +8,9 @@ Environment="com_camenduru_web_data_mongodb_uri=mongodb://127.0.0.1:27017/web?wa
 Environment="com_camenduru_discord_token=MT"
 Environment="com_camenduru_discord_api_url=http://127.0.0.1:1012"
 Environment="com_camenduru_discord_job_type=sdxl"
-Environment="server_port=1013"
+Environment="server_port=1014"
 WorkingDirectory=/content/com.camenduru/service
-ExecStart=/bin/bash -c 'python discord_sdxl_dispatcher.py'
+ExecStart=/bin/bash -c 'python dispatcher-web-sdxl.py'
 Restart=always
 [Install]
 WantedBy=multi-user.target
