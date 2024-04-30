@@ -12,7 +12,7 @@ Environment="com_camenduru_web_mail_port=587"
 Environment="com_camenduru_web_mail_smtp_ssl_trust=smtp.gmail.com"
 Environment="com_camenduru_web_mail_username=mail@gmail.com"
 WorkingDirectory=/content/com.camenduru/web
-ExecStart=/bin/bash -c 'java -Dserver.port=3000 -jar target/web-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod'
+ExecStart=/bin/bash -c 'java -Dserver.port=3000 -jar target/web-0.0.1.jar --spring.profiles.active=prod'
 Restart=always
 [Install]
 WantedBy=multi-user.target
