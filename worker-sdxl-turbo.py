@@ -1,5 +1,6 @@
 from diffusers import AutoPipelineForText2Image
 import torch
+import json
 
 pipe = AutoPipelineForText2Image.from_pretrained("stabilityai/sdxl-turbo", torch_dtype=torch.float16, variant="fp16").to("cuda")
 
@@ -16,12 +17,27 @@ def closestNumber(n, m):
         return n1
     return n2
 
-def generate(prompt):
-  width = closestNumber(512, 8)
-  height = closestNumber(512, 8)
-  image = pipe(prompt, num_inference_steps=1, guidance_scale=0.0, width=width, height=height).images[0]
-  image.save('/content/image.jpg')
-  return image.resize((512, 512))
+def is_parsable_json(command):
+    try:
+        json.loads(command)
+        return True
+    except json.JSONDecodeError:
+        return False
+
+def generate(command):
+    if is_parsable_json(command):
+        values = json.loads(command)
+        width = closestNumber(values['width'], 8)
+        height = closestNumber(values['height'], 8)
+        image = pipe(values['prompt'], negative_prompt=values['negative_prompt'], num_inference_steps=1, guidance_scale=0.0, width=width, height=height).images[0]
+        image.save('/content/image.jpg')
+        return image
+    else:
+        width = closestNumber(512, 8)
+        height = closestNumber(512, 8)
+        image = pipe(command, num_inference_steps=1, guidance_scale=0.0, width=width, height=height).images[0]
+        image.save('/content/image.jpg')
+        return image
 
 with gr.Blocks(title=f"sdxl-turbo", css=".gradio-container {max-width: 544px !important}", analytics_enabled=False) as demo:
     with gr.Row():
