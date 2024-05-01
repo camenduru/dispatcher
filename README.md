@@ -12,6 +12,6 @@ This project aims to create a UI for https://github.com/camenduru/camenduru
 - https://github.com/camenduru/discord <br />
 - https://github.com/camenduru/dispatcher <br />
 
-### 🗃️ Database Client
+### ☎ Database Client
 
 https://github.com/mongodb/mongo-python-driver <br />
