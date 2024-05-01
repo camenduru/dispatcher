@@ -1,15 +1,17 @@
 [Unit]
-Description=Discord
+Description=Dispatcher Web SDXL
 After=syslog.target network.target
 [Service]
 User=root
 Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/cuda/bin"
 Environment="com_camenduru_mongodb_uri=mongodb://127.0.0.1:27017/web?waitQueueMultiple=1000"
+Environment="com_camenduru_worker_uri=http://127.0.0.1:1012"
 Environment="com_camenduru_discord_token=MT"
-Environment="com_camenduru_job_default_type=sdxl-turbo"
-Environment="com_camenduru_discord_result=/content/images/generating.jpg"
-WorkingDirectory=/content/com.camenduru/discord
-ExecStart=/bin/bash -c 'java -Dserver.port=3001 -jar target/discord-0.0.1.jar --spring.profiles.active=prod'
+Environment="com_camenduru_job_type=sdxl"
+Environment="com_camenduru_job_source=WEB"
+Environment="com_camenduru_server_port=1014"
+WorkingDirectory=/content/com.camenduru/dispatcher
+ExecStart=/bin/bash -c 'python dispatcher.py'
 Restart=always
 [Install]
 WantedBy=multi-user.target
