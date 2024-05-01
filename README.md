@@ -5,7 +5,6 @@
 # 🚦WIP🚦
 
 ### 🔥 Motivation and Action
-
 This project aims to create a UI for https://github.com/camenduru/camenduru
 
 - https://github.com/camenduru/web <br />
@@ -13,5 +12,4 @@ This project aims to create a UI for https://github.com/camenduru/camenduru
 - https://github.com/camenduru/dispatcher <br />
 
 ### ☎ Database Client
-
 https://github.com/mongodb/mongo-python-driver <br />
