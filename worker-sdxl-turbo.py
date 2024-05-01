@@ -2,7 +2,11 @@ from diffusers import AutoPipelineForText2Image
 import torch
 import json
 
-pipe = AutoPipelineForText2Image.from_pretrained("stabilityai/sdxl-turbo", torch_dtype=torch.float16, variant="fp16").to("cuda:1")
+pipe = AutoPipelineForText2Image.from_pretrained(
+    "stabilityai/sdxl-turbo",
+    torch_dtype=torch.float16,
+    variant="fp16",
+    requires_safety_checker=False).to("cuda:1")
 
 import gradio as gr
 
