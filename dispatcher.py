@@ -2,22 +2,24 @@ import http.server, socketserver, os, json
 import requests, base64, threading
 from pymongo import MongoClient
 
-mongodb = os.getenv('com_camenduru_web_data_mongodb_uri')
-api = os.getenv('com_camenduru_discord_api_url')
-token = os.getenv('com_camenduru_discord_token')
-job = os.getenv('com_camenduru_discord_job_type')
+mongodb_uri = os.getenv('com_camenduru_mongodb_uri')
+worker_uri = os.getenv('com_camenduru_worker_uri')
+discord_token = os.getenv('com_camenduru_discord_token')
+job_type = os.getenv('com_camenduru_job_type')
+job_source = os.getenv('com_camenduru_job_source')
+server_port = os.getenv('com_camenduru_server_port')
 
 def loop():
-  client = MongoClient(mongodb)
+  client = MongoClient(mongodb_uri)
   db = client['web']
   collection_job = db['job']
   collection_detail = db['detail']
 
   while True:
-    waiting_documents = collection_job.find({"$and":[ {"status":"WAITING"}, {"source":"DISCORD"}]})
+    waiting_documents = collection_job.find({"$and":[ {"status":"WAITING"}, {"source":job_source}]})
     for waiting_document in waiting_documents:
         server = waiting_document['type']
-        if(server==job):
+        if(server==job_type):
             detail = waiting_document['discord']
             discord = collection_detail.find_one({"_id": detail.id})['discord']
             total = collection_detail.find_one({"_id": detail.id})['total']
@@ -28,12 +30,12 @@ def loop():
             collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "WORKING"}})
             try:
                 from gradio_client import Client
-                client = Client(api, verbose=False)
+                client = Client(worker_uri, verbose=False)
                 result = client.predict(command, fn_index=0)
                 files = {f"image.png": open(result, "rb").read()}
                 payload = {"content": f"{command} <@{source_id}>"}
                 try:
-                    responseD = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {token}"}, files=files)
+                    responseD = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {discord_token}"}, files=files)
                     responseD.raise_for_status()
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "DONE"}})
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"result": responseD.json()['attachments'][0]['url']}})
@@ -56,7 +58,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
             return None
         return path
       
-PORT = int(os.getenv('server_port'))
+PORT = int(server_port)
 Handler = MyHandler
 Handler.extensions_map.update({
     '.html': 'text/html',
