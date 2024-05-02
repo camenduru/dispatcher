@@ -20,13 +20,14 @@ def loop():
     for waiting_document in waiting_documents:
         server = waiting_document['type']
         if(server==job_type):
-            detail = waiting_document['discord']
-            discord = collection_detail.find_one({"_id": detail.id})['discord']
-            total = collection_detail.find_one({"_id": detail.id})['total']
+            login = waiting_document['login']
+            detail = collection_detail.find_one({"login": login})
             amount = waiting_document['amount']
             command = waiting_document['command']
             source_channel = waiting_document['source_channel']
             source_id = waiting_document['source_id']
+            print(source_id)
+            print(source_channel)
             collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "WORKING"}})
             try:
                 from gradio_client import Client
@@ -39,8 +40,8 @@ def loop():
                     responseD.raise_for_status()
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "DONE"}})
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"result": responseD.json()['attachments'][0]['url']}})
-                    total = int(total) - int(amount)
-                    collection_detail.update_one({"_id": detail.id}, {"$set": {"total": total}})
+                    total = int(detail['total']) - int(amount)
+                    collection_detail.update_one({"_id": detail['_id']}, {"$set": {"total": total}})
                 except requests.exceptions.RequestException as e:
                     print(f"D An error occurred: {e}")
                 except Exception as e:
