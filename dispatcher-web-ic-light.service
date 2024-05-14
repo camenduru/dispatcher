@@ -10,6 +10,7 @@ Environment="com_camenduru_discord_token=MT"
 Environment="com_camenduru_job_type=ic-light"
 Environment="com_camenduru_job_source=WEB"
 Environment="com_camenduru_server_port=1034"
+Environment="com_camenduru_notify_uri=http://localhost:8080"
 WorkingDirectory=/content/com.camenduru/dispatcher
 ExecStart=/bin/bash -c 'python dispatcher.py'
 Restart=always

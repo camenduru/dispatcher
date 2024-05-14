@@ -8,6 +8,7 @@ discord_token = os.getenv('com_camenduru_discord_token')
 job_type = os.getenv('com_camenduru_job_type')
 job_source = os.getenv('com_camenduru_job_source')
 server_port = os.getenv('com_camenduru_server_port')
+notify_uri = os.getenv('com_camenduru_notify_uri')
 
 def loop():
   client = MongoClient(mongodb_uri)
@@ -42,6 +43,8 @@ def loop():
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"result": responseD.json()['attachments'][0]['url']}})
                     total = int(detail['total']) - int(amount)
                     collection_detail.update_one({"_id": detail['_id']}, {"$set": {"total": total}})
+                    notify_response = requests.get(f"{notify_uri}/api/notify?login={login}")
+                    notify_response.raise_for_status()
                 except requests.exceptions.RequestException as e:
                     print(f"D An error occurred: {e}")
                 except Exception as e:
