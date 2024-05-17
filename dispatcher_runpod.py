@@ -4,7 +4,7 @@ from pymongo import MongoClient
 
 mongodb_uri = os.getenv('com_camenduru_mongodb_uri')
 worker_uri = os.getenv('com_camenduru_worker_uri')
-discord_token = os.getenv('com_camenduru_discord_token')
+runpod_token = os.getenv('com_camenduru_runpod_token')
 job_type = os.getenv('com_camenduru_job_type')
 job_source = os.getenv('com_camenduru_job_source')
 server_port = os.getenv('com_camenduru_server_port')
@@ -28,29 +28,27 @@ def loop():
             source_channel = waiting_document['source_channel']
             source_id = waiting_document['source_id']
             collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "WORKING"}})
+            command_data = json.loads(command)
+            command_data["source_id"] = source_id
+            command_data["source_channel"] = source_channel
+            data = { "input": command_data }
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {runpod_token}"
+            }
             try:
-                from gradio_client import Client
-                client = Client(worker_uri, verbose=False)
-                result = client.predict(command, fn_index=0)
-                files = {f"image.png": open(result, "rb").read()}
-                payload = {"content": f"{command} <@{source_id}>"}
-                try:
-                    responseD = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {discord_token}"}, files=files)
-                    responseD.raise_for_status()
+                response = requests.post(worker_uri, headers=headers, json=data)
+                print(response.json()['status'])
+                print(response.json()['output']['result'])
+                if(response.json()['status'] == "COMPLETED" and response.json()['output']['result'] != "ERROR"):
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "DONE"}})
-                    collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"result": responseD.json()['attachments'][0]['url']}})
+                    collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"result": response.json()['output']['result']}})
                     total = int(detail['total']) - int(amount)
                     collection_detail.update_one({"_id": detail['_id']}, {"$set": {"total": total}})
                     notify_response = requests.get(f"{notify_uri}/api/notify?login={login}")
                     notify_response.raise_for_status()
-                except requests.exceptions.RequestException as e:
-                    print(f"D An error occurred: {e}")
-                except Exception as e:
-                    print(f"D An unexpected error occurred: {e}")
-            except requests.exceptions.RequestException as e:
-                print(f"F An error occurred: {e}")
             except Exception as e:
-                print(f"F An unexpected error occurred: {e}")
+                print(f"An unexpected error occurred: {e}")
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
