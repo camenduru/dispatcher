@@ -38,8 +38,6 @@ def loop():
             }
             try:
                 response = requests.post(worker_uri, headers=headers, json=data)
-                print(response.json()['status'])
-                print(response.json()['output']['result'])
                 if(response.json()['status'] == "COMPLETED" and response.json()['output']['result'] != "ERROR"):
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "DONE"}})
                     collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"result": response.json()['output']['result']}})
