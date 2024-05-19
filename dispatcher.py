@@ -32,7 +32,11 @@ def loop():
                 from gradio_client import Client
                 client = Client(worker_uri, verbose=False)
                 result = client.predict(command, fn_index=0)
-                files = {f"image.png": open(result, "rb").read()}
+                file_extension = os.path.splitext(os.path.basename(result))[1]
+                if(file_extension == ".png"):
+                    files = {f"file.png": open(result, "rb").read()}
+                elif(file_extension == ".mp4"):
+                    files = {f"file.mp4": open(result, "rb").read()}
                 payload = {"content": f"{command} <@{source_id}>"}
                 try:
                     responseD = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {discord_token}"}, files=files)
