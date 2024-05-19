@@ -1,5 +1,5 @@
 [Unit]
-Description=Dispatcher Magic Time
+Description=Dispatcher WEB Magic Time
 After=syslog.target network.target
 [Service]
 User=root

@@ -1,5 +1,5 @@
 [Unit]
-Description=Dispatcher Web SDXL
+Description=Dispatcher Runpod IC Light
 After=syslog.target network.target
 [Service]
 User=root

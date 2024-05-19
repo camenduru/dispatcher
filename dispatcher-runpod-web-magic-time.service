@@ -1,5 +1,5 @@
 [Unit]
-Description=Dispatcher Runpod Web SDXL
+Description=Dispatcher Runpod Magic Time
 After=syslog.target network.target
 [Service]
 User=root
@@ -7,9 +7,9 @@ Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/
 Environment="com_camenduru_mongodb_uri=mongodb://127.0.0.1:27017/web"
 Environment="com_camenduru_worker_uri=https://api.runpod.ai/v2/ID/runsync"
 Environment="com_camenduru_runpod_token=RP"
-Environment="com_camenduru_job_type=sdxl"
+Environment="com_camenduru_job_type=magic-time"
 Environment="com_camenduru_job_source=WEB"
-Environment="com_camenduru_server_port=1015"
+Environment="com_camenduru_server_port=1025"
 Environment="com_camenduru_notify_uri=http://localhost:8080"
 WorkingDirectory=/content/com.camenduru/dispatcher
 ExecStart=/bin/bash -c 'python dispatcher_runpod.py'
