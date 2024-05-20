@@ -51,14 +51,10 @@ def loop():
 
                 if response and response.status_code == 200:
                     try:
-                        payload = {"job_id": job_id, "result": response.json()['attachments'][0]['url']}
+                        payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
                         requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
                     except Exception as e:
                         print(f"An unexpected error occurred: {e}")
-                    finally:
-                        return {"result": response.json()['attachments'][0]['url']}
-                else:
-                    return {"result": "ERROR"}
 
             except Exception as e:
                 print(f"Client an unexpected error occurred: {e}")
