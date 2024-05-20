@@ -27,24 +27,19 @@ def loop():
             command = waiting_document['command']
             source_channel = waiting_document['source_channel']
             source_id = waiting_document['source_id']
-            collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "WORKING"}})
+            job_id = waiting_document['_id']
+            collection_job.update_one({"_id": job_id}, {"$set": {"status": "WORKING"}})
             command_data = json.loads(command)
             command_data["source_id"] = source_id
             command_data["source_channel"] = source_channel
+            command_data['job_id'] = str(job_id)
             data = { "input": command_data }
             headers = {
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {runpod_token}"
             }
             try:
-                response = requests.post(worker_uri, headers=headers, json=data)
-                if(response.json()['status'] == "COMPLETED" and response.json()['output']['result'] != "ERROR"):
-                    collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "DONE"}})
-                    collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"result": response.json()['output']['result']}})
-                    total = int(detail['total']) - int(amount)
-                    collection_detail.update_one({"_id": detail['_id']}, {"$set": {"total": total}})
-                    notify_response = requests.get(f"{notify_uri}/api/notify?login={login}")
-                    notify_response.raise_for_status()
+                requests.post(worker_uri, headers=headers, json=data)
             except Exception as e:
                 print(f"An unexpected error occurred: {e}")
 
