@@ -9,6 +9,8 @@ job_type = os.getenv('com_camenduru_job_type')
 job_source = os.getenv('com_camenduru_job_source')
 server_port = os.getenv('com_camenduru_server_port')
 notify_uri = os.getenv('com_camenduru_notify_uri')
+web_uri = os.getenv('com_camenduru_web_uri')
+web_token = os.getenv('com_camenduru_web_token')
 
 def loop():
   client = MongoClient(mongodb_uri)
@@ -27,7 +29,8 @@ def loop():
             command = waiting_document['command']
             source_channel = waiting_document['source_channel']
             source_id = waiting_document['source_id']
-            collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "WORKING"}})
+            job_id = waiting_document['_id']
+            collection_job.update_one({"_id": job_id}, {"$set": {"status": "WORKING"}})
             try:
                 from gradio_client import Client
                 client = Client(worker_uri, verbose=False)
@@ -38,23 +41,27 @@ def loop():
                 elif(file_extension == ".mp4"):
                     files = {f"file.mp4": open(result, "rb").read()}
                 payload = {"content": f"{command} <@{source_id}>"}
+                
+                response = None
                 try:
-                    responseD = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {discord_token}"}, files=files)
-                    responseD.raise_for_status()
-                    collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"status": "DONE"}})
-                    collection_job.update_one({"_id": waiting_document['_id']}, {"$set": {"result": responseD.json()['attachments'][0]['url']}})
-                    total = int(detail['total']) - int(amount)
-                    collection_detail.update_one({"_id": detail['_id']}, {"$set": {"total": total}})
-                    notify_response = requests.get(f"{notify_uri}/api/notify?login={login}")
-                    notify_response.raise_for_status()
-                except requests.exceptions.RequestException as e:
-                    print(f"D An error occurred: {e}")
+                    response = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {discord_token}"}, files=files)
+                    response.raise_for_status()
                 except Exception as e:
-                    print(f"D An unexpected error occurred: {e}")
-            except requests.exceptions.RequestException as e:
-                print(f"F An error occurred: {e}")
+                    print(f"Discord an unexpected error occurred: {e}")
+
+                if response and response.status_code == 200:
+                    try:
+                        payload = {"job_id": job_id, "result": response.json()['attachments'][0]['url']}
+                        requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
+                    except Exception as e:
+                        print(f"An unexpected error occurred: {e}")
+                    finally:
+                        return {"result": response.json()['attachments'][0]['url']}
+                else:
+                    return {"result": "ERROR"}
+
             except Exception as e:
-                print(f"F An unexpected error occurred: {e}")
+                print(f"Client an unexpected error occurred: {e}")
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):

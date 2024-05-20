@@ -5,7 +5,7 @@ After=syslog.target network.target
 User=root
 Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/cuda/bin"
 Environment="com_camenduru_mongodb_uri=mongodb://127.0.0.1:27017/web"
-Environment="com_camenduru_worker_uri=https://api.runpod.ai/v2/ID/run"
+Environment="com_camenduru_worker_uri=https://api.runpod.ai/v2/ID/runsync"
 Environment="com_camenduru_runpod_token=RP"
 Environment="com_camenduru_job_type=sdxl"
 Environment="com_camenduru_job_source=WEB"
