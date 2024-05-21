@@ -58,7 +58,11 @@ def loop():
                 except Exception as e:
                     print(f"Client an unexpected error occurred: {e}")
             else:
-                print(f"Oops! Your balance is insufficient. Please redeem a Tost wallet code.")
+                try:
+                    payload = {"jobId": str(job_id), "result": "Oops! Your balance is insufficient. Please redeem a Tost wallet code."}
+                    requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
+                except Exception as e:
+                    print(f"An unexpected error occurred: {e}")
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
