@@ -10,7 +10,8 @@ Environment="com_camenduru_runpod_token=RP"
 Environment="com_camenduru_job_type=sdxl"
 Environment="com_camenduru_job_source=WEB"
 Environment="com_camenduru_server_port=1015"
-Environment="com_camenduru_notify_uri=http://localhost:8080"
+Environment="com_camenduru_web_uri=http://localhost:8080"
+Environment="com_camenduru_web_token=web_token"
 WorkingDirectory=/content/com.camenduru/dispatcher
 ExecStart=/bin/bash -c 'python dispatcher_runpod.py'
 Restart=always

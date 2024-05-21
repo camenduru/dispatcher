@@ -10,7 +10,6 @@ Environment="com_camenduru_discord_token=MT"
 Environment="com_camenduru_job_type=sdxl-turbo"
 Environment="com_camenduru_job_source=DISCORD"
 Environment="com_camenduru_server_port=1003"
-Environment="com_camenduru_notify_uri=http://localhost:8080"
 Environment="com_camenduru_web_uri=http://localhost:8080"
 Environment="com_camenduru_web_token=web_token"
 WorkingDirectory=/content/com.camenduru/dispatcher

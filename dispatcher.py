@@ -8,7 +8,6 @@ discord_token = os.getenv('com_camenduru_discord_token')
 job_type = os.getenv('com_camenduru_job_type')
 job_source = os.getenv('com_camenduru_job_source')
 server_port = os.getenv('com_camenduru_server_port')
-notify_uri = os.getenv('com_camenduru_notify_uri')
 web_uri = os.getenv('com_camenduru_web_uri')
 web_token = os.getenv('com_camenduru_web_token')
 
@@ -25,39 +24,41 @@ def loop():
         if(server==job_type):
             login = waiting_document['login']
             detail = collection_detail.find_one({"login": login})
-            amount = waiting_document['amount']
             command = waiting_document['command']
             source_channel = waiting_document['source_channel']
             source_id = waiting_document['source_id']
             job_id = waiting_document['_id']
-            collection_job.update_one({"_id": job_id}, {"$set": {"status": "WORKING"}})
-            try:
-                from gradio_client import Client
-                client = Client(worker_uri, verbose=False)
-                result = client.predict(command, fn_index=0)
-                file_extension = os.path.splitext(os.path.basename(result))[1]
-                if(file_extension == ".png"):
-                    files = {f"file.png": open(result, "rb").read()}
-                elif(file_extension == ".mp4"):
-                    files = {f"file.mp4": open(result, "rb").read()}
-                payload = {"content": f"{command} <@{source_id}>"}
-                
-                response = None
+            if int(detail['total']) > 0:
+                collection_job.update_one({"_id": job_id}, {"$set": {"status": "WORKING"}})
                 try:
-                    response = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {discord_token}"}, files=files)
-                    response.raise_for_status()
-                except Exception as e:
-                    print(f"Discord an unexpected error occurred: {e}")
-
-                if response and response.status_code == 200:
+                    from gradio_client import Client
+                    client = Client(worker_uri, verbose=False)
+                    result = client.predict(command, fn_index=0)
+                    file_extension = os.path.splitext(os.path.basename(result))[1]
+                    if(file_extension == ".png"):
+                        files = {f"file.png": open(result, "rb").read()}
+                    elif(file_extension == ".mp4"):
+                        files = {f"file.mp4": open(result, "rb").read()}
+                    payload = {"content": f"{command} <@{source_id}>"}
+                    
+                    response = None
                     try:
-                        payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
-                        requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
+                        response = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {discord_token}"}, files=files)
+                        response.raise_for_status()
                     except Exception as e:
-                        print(f"An unexpected error occurred: {e}")
+                        print(f"Discord an unexpected error occurred: {e}")
 
-            except Exception as e:
-                print(f"Client an unexpected error occurred: {e}")
+                    if response and response.status_code == 200:
+                        try:
+                            payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
+                            requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
+                        except Exception as e:
+                            print(f"An unexpected error occurred: {e}")
+
+                except Exception as e:
+                    print(f"Client an unexpected error occurred: {e}")
+            else:
+                print(f"Oops! Your balance is insufficient. Please redeem a Tost wallet code.")
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):

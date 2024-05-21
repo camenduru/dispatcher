@@ -8,7 +8,8 @@ runpod_token = os.getenv('com_camenduru_runpod_token')
 job_type = os.getenv('com_camenduru_job_type')
 job_source = os.getenv('com_camenduru_job_source')
 server_port = os.getenv('com_camenduru_server_port')
-notify_uri = os.getenv('com_camenduru_notify_uri')
+web_uri = os.getenv('com_camenduru_web_uri')
+web_token = os.getenv('com_camenduru_web_token')
 
 def loop():
   client = MongoClient(mongodb_uri)
@@ -23,25 +24,27 @@ def loop():
         if(server==job_type):
             login = waiting_document['login']
             detail = collection_detail.find_one({"login": login})
-            amount = waiting_document['amount']
             command = waiting_document['command']
             source_channel = waiting_document['source_channel']
             source_id = waiting_document['source_id']
             job_id = waiting_document['_id']
-            collection_job.update_one({"_id": job_id}, {"$set": {"status": "WORKING"}})
-            command_data = json.loads(command)
-            command_data["source_id"] = source_id
-            command_data["source_channel"] = source_channel
-            command_data['job_id'] = str(job_id)
-            data = { "input": command_data }
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {runpod_token}"
-            }
-            try:
-                requests.post(worker_uri, headers=headers, json=data)
-            except Exception as e:
-                print(f"An unexpected error occurred: {e}")
+            if int(detail['total']) > 0:
+                collection_job.update_one({"_id": job_id}, {"$set": {"status": "WORKING"}})
+                command_data = json.loads(command)
+                command_data["source_id"] = source_id
+                command_data["source_channel"] = source_channel
+                command_data['job_id'] = str(job_id)
+                data = { "input": command_data }
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {runpod_token}"
+                }
+                try:
+                    requests.post(worker_uri, headers=headers, json=data)
+                except Exception as e:
+                    print(f"An unexpected error occurred: {e}")
+            else:
+                print(f"Oops! Your balance is insufficient. Please redeem a Tost wallet code.")
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
