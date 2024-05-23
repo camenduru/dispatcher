@@ -1,5 +1,5 @@
 [Unit]
-Description=Dispatcher Runpod Magic Time
+Description=Dispatcher Runpod Web Magic Time
 After=syslog.target network.target
 [Service]
 User=root
