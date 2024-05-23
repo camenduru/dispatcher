@@ -13,7 +13,7 @@ Environment="com_camenduru_server_port=1044"
 Environment="com_camenduru_web_uri=http://localhost:8080"
 Environment="com_camenduru_web_token=web_token"
 WorkingDirectory=/content/com.camenduru/dispatcher
-ExecStart=/bin/bash -c 'python dispatcher-3d.py'
+ExecStart=/bin/bash -c 'python dispatcher.py'
 Restart=always
 [Install]
 WantedBy=multi-user.target

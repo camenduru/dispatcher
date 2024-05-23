@@ -34,13 +34,23 @@ def loop():
                     from gradio_client import Client
                     client = Client(worker_uri, verbose=False)
                     result = client.predict(command, fn_index=0)
-                    file_extension = os.path.splitext(os.path.basename(result))[1]
-                    if(file_extension == ".png"):
-                        files = {f"file.png": open(result, "rb").read()}
-                    elif(file_extension == ".mp4"):
-                        files = {f"file.mp4": open(result, "rb").read()}
-                    payload = {"content": f"{command} <@{source_id}>"}
+
+                    if isinstance(result, str):
+                        file_path = result
+                        default_filename = os.path.basename(file_path)
+                        files = {default_filename: open(file_path, "rb").read()}
+                    else:
+                        first_key = next(iter(result[0]))
+                        file_path = result[0][first_key]
+                        file_paths = result[1]
+                        default_filename = os.path.basename(file_path)
+                        files = { default_filename: open(file_path, "rb").read() }
+                        for path in file_paths:
+                            filename = os.path.basename(path)
+                            with open(path, "rb") as file:
+                                files[filename] = file.read()
                     
+                    payload = {"content": f"{command} <@{source_id}>"}
                     response = None
                     try:
                         response = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {discord_token}"}, files=files)
@@ -50,7 +60,11 @@ def loop():
 
                     if response and response.status_code == 200:
                         try:
-                            payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
+                            if isinstance(result, str):
+                                payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
+                            else:
+                                urls = [attachment['url'] for attachment in response.json()['attachments']]
+                                payload = {"jobId": str(job_id), "result": str(urls)}
                             requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
                         except Exception as e:
                             print(f"An unexpected error occurred: {e}")
