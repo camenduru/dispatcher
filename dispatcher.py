@@ -39,7 +39,11 @@ def loop():
                         file_path = result
                         default_filename = os.path.basename(file_path)
                         files = {default_filename: open(file_path, "rb").read()}
-                    else:
+                    elif isinstance(result, dict):
+                        file_path = result.get('video')
+                        default_filename = os.path.basename(file_path)
+                        files = {default_filename: open(file_path, "rb").read()}
+                    elif isinstance(result, tuple):
                         first_key = next(iter(result[0]))
                         file_path = result[0][first_key]
                         file_paths = result[1]
@@ -62,7 +66,9 @@ def loop():
                         try:
                             if isinstance(result, str):
                                 payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
-                            else:
+                            elif isinstance(result, dict):
+                                payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
+                            elif isinstance(result, tuple):
                                 urls = [attachment['url'] for attachment in response.json()['attachments']]
                                 payload = {"jobId": str(job_id), "result": str(urls)}
                             requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
