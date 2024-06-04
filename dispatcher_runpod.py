@@ -49,7 +49,7 @@ def loop():
                         print(f"An unexpected error occurred: {e}")
                 else:
                     try:
-                        payload = {"jobId": str(job_id), "result": "Oops! Your balance is insufficient. Please redeem a Tost wallet code."}
+                        payload = {"jobId": str(job_id), "result": "Oops! Your balance is insufficient. Please redeem a Tost wallet code, or wait for the daily 100 free Tost wallet balance."}
                         requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
                     except Exception as e:
                         print(f"An unexpected error occurred: {e}")
