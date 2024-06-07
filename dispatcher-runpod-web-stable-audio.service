@@ -1,0 +1,19 @@
+[Unit]
+Description=Dispatcher Runpod Web Stable Audio
+After=syslog.target network.target
+[Service]
+User=root
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/cuda/bin"
+Environment="com_camenduru_mongodb_uri=mongodb://127.0.0.1:27017/web"
+Environment="com_camenduru_worker_uri=https://api.runpod.ai/v2/ID/run"
+Environment="com_camenduru_runpod_token=RP"
+Environment="com_camenduru_job_type=stable-audio"
+Environment="com_camenduru_job_source=WEB"
+Environment="com_camenduru_server_port=1205"
+Environment="com_camenduru_web_uri=http://localhost:8080"
+Environment="com_camenduru_web_token=web_token"
+WorkingDirectory=/content/com.camenduru/dispatcher
+ExecStart=/bin/bash -c 'python dispatcher_runpod.py'
+Restart=always
+[Install]
+WantedBy=multi-user.target

@@ -83,7 +83,11 @@ def loop():
                         print(f"Client an unexpected error occurred: {e}")
                 else:
                     try:
-                        payload = {"jobId": str(job_id), "result": "Oops! Your balance is insufficient. Please redeem a Tost wallet code, or wait for the daily 100 free Tost wallet balance."}
+                        payload = {"jobId": str(job_id), "result": "Oops! Your balance is insufficient. If you want a daily wallet balance of  \
+                        <span class='text-info' style='font-weight: bold;'>5100</span>, please subscribe to \
+                        <a class='text-info' style='font-weight: bold;' href='https://github.com/sponsors/camenduru'>GitHub Sponsors</a> or \
+                        <a class='text-info' style='font-weight: bold;' href='https://www.patreon.com/camenduru'>Patreon</a>, \
+                        or wait for the daily free <span class='text-info' style='font-weight: bold;'>100</span> Tost wallet balance."}
                         requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
                     except Exception as e:
                         print(f"An unexpected error occurred: {e}")
