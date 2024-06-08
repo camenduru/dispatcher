@@ -50,7 +50,7 @@ def loop():
                 else:
                     try:
                         payload = {"jobId": str(job_id), "result": "Oops! Your balance is insufficient. If you want a daily wallet balance of  \
-                        <span class='text-info' style='font-weight: bold;'>5100</span>, please subscribe to \
+                        <span class='text-info' style='font-weight: bold;'>1100</span>, please subscribe to \
                         <a class='text-info' style='font-weight: bold;' href='https://github.com/sponsors/camenduru'>GitHub Sponsors</a> or \
                         <a class='text-info' style='font-weight: bold;' href='https://www.patreon.com/camenduru'>Patreon</a>, \
                         or wait for the daily free <span class='text-info' style='font-weight: bold;'>100</span> Tost wallet balance."}
