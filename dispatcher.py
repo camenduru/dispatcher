@@ -19,78 +19,61 @@ def loop():
     client = MongoClient(mongodb_uri)
     db = client['web']
     collection_job = db['job']
-    collection_detail = db['detail']
 
     def check_jobs():
         waiting_documents = collection_job.find({"$and":[ {"status":"WAITING"}, {"source":job_source}]})
         for waiting_document in waiting_documents:
             server = waiting_document['type']
             if(server==job_type):
-                login = waiting_document['login']
-                detail = collection_detail.find_one({"login": login})
                 command = waiting_document['command']
                 source_channel = waiting_document['source_channel']
                 source_id = waiting_document['source_id']
                 job_id = waiting_document['_id']
-                if int(detail['total']) > 0:
-                    collection_job.update_one({"_id": job_id}, {"$set": {"status": "WORKING"}})
+                collection_job.update_one({"_id": job_id}, {"$set": {"status": "WORKING"}})
+                try:
+                    from gradio_client import Client
+                    client = Client(worker_uri, verbose=False)
+                    result = client.predict(command, fn_index=0)
+                    if isinstance(result, str):
+                        file_path = result
+                        default_filename = os.path.basename(file_path)
+                        files = {default_filename: open(file_path, "rb").read()}
+                    elif isinstance(result, dict):
+                        file_path = result.get('video')
+                        default_filename = os.path.basename(file_path)
+                        files = {default_filename: open(file_path, "rb").read()}
+                    elif isinstance(result, tuple):
+                        first_key = next(iter(result[0]))
+                        file_path = result[0][first_key]
+                        file_paths = result[1]
+                        default_filename = os.path.basename(file_path)
+                        files = { default_filename: open(file_path, "rb").read() }
+                        for path in file_paths:
+                            filename = os.path.basename(path)
+                            with open(path, "rb") as file:
+                                files[filename] = file.read()
+                    payload = {"content": f"{command} <@{source_id}>"}
+                    response = None
                     try:
-                        from gradio_client import Client
-                        client = Client(worker_uri, verbose=False)
-                        result = client.predict(command, fn_index=0)
-
-                        if isinstance(result, str):
-                            file_path = result
-                            default_filename = os.path.basename(file_path)
-                            files = {default_filename: open(file_path, "rb").read()}
-                        elif isinstance(result, dict):
-                            file_path = result.get('video')
-                            default_filename = os.path.basename(file_path)
-                            files = {default_filename: open(file_path, "rb").read()}
-                        elif isinstance(result, tuple):
-                            first_key = next(iter(result[0]))
-                            file_path = result[0][first_key]
-                            file_paths = result[1]
-                            default_filename = os.path.basename(file_path)
-                            files = { default_filename: open(file_path, "rb").read() }
-                            for path in file_paths:
-                                filename = os.path.basename(path)
-                                with open(path, "rb") as file:
-                                    files[filename] = file.read()
-                        
-                        payload = {"content": f"{command} <@{source_id}>"}
-                        response = None
+                        response = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {discord_token}"}, files=files)
+                        response.raise_for_status()
+                    except Exception as e:
+                        print(f"Discord an unexpected error occurred: {e}")
+                    if response and response.status_code == 200:
                         try:
-                            response = requests.post(f"https://discord.com/api/v9/channels/{source_channel}/messages", data=payload, headers={"authorization": f"Bot {discord_token}"}, files=files)
-                            response.raise_for_status()
+                            if isinstance(result, str):
+                                payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
+                            elif isinstance(result, dict):
+                                payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
+                            elif isinstance(result, tuple):
+                                urls = [attachment['url'] for attachment in response.json()['attachments']]
+                                payload = {"jobId": str(job_id), "result": str(urls)}
+                            requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
                         except Exception as e:
-                            print(f"Discord an unexpected error occurred: {e}")
+                            print(f"An unexpected error occurred: {e}")
+                except Exception as e:
+                    print(f"Client an unexpected error occurred: {e}")
 
-                        if response and response.status_code == 200:
-                            try:
-                                if isinstance(result, str):
-                                    payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
-                                elif isinstance(result, dict):
-                                    payload = {"jobId": str(job_id), "result": response.json()['attachments'][0]['url']}
-                                elif isinstance(result, tuple):
-                                    urls = [attachment['url'] for attachment in response.json()['attachments']]
-                                    payload = {"jobId": str(job_id), "result": str(urls)}
-                                requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
-                            except Exception as e:
-                                print(f"An unexpected error occurred: {e}")
-
-                    except Exception as e:
-                        print(f"Client an unexpected error occurred: {e}")
-                else:
-                    try:
-                        payload = {"jobId": str(job_id), "result": "Oops! Your balance is insufficient. If you want a daily wallet balance of  \
-                        <span class='text-info' style='font-weight: bold;'>1100</span>, please subscribe to \
-                        <a class='text-info' style='font-weight: bold;' href='https://github.com/sponsors/camenduru'>GitHub Sponsors</a> or \
-                        <a class='text-info' style='font-weight: bold;' href='https://www.patreon.com/camenduru'>Patreon</a>, \
-                        or wait for the daily free <span class='text-info' style='font-weight: bold;'>100</span> Tost wallet balance."}
-                        requests.post(f"{web_uri}/api/notify", data=json.dumps(payload), headers={'Content-Type': 'application/json', "authorization": f"{web_token}"})
-                    except Exception as e:
-                        print(f"An unexpected error occurred: {e}")
         threading.Timer(1, check_jobs).start()
     check_jobs()
 
